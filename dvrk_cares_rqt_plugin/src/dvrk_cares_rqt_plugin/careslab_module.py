@@ -119,6 +119,7 @@ class MyPlugin(Plugin):
             msg = QMessageBox()
             msg.setText('running autocamera')
             retval = msg.exec_()
+        self._widget.autocameraRadioButton.setChecked(True)
 
     def _on_clutchandMoveRadioButton_pressed(self):
         if not self._widget.clutchandMoveRadioButton.isChecked():
@@ -127,6 +128,7 @@ class MyPlugin(Plugin):
             msg = QMessageBox()
             msg.setText('running clutch and move')
             retval = msg.exec_()
+        self._widget.clutchandMoveRadioButton.setChecked(True)
 
     def _on_joystickRadioButton_pressed(self):
         if not self._widget.joystickRadioButton.isChecked():
@@ -135,3 +137,4 @@ class MyPlugin(Plugin):
             msg = QMessageBox()
             msg.setText('running joystick')
             retval = msg.exec_()
+        self._widget.joystickRadioButton.setChecked(True)

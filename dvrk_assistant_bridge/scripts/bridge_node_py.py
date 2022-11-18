@@ -51,9 +51,9 @@ def bleedingDetectionRunCallback(data):
 # dvrk Callbacks
 #--------------------------------------------------------
 def home(data):
-    rospy.Publisher('/dvrk/console/home', Empty, queue_size=10).publish(data)
+    rospy.Publisher('/dvrk/console/home', Empty, latch=True, queue_size=1).publish()
 def powerOff(data):
-    rospy.Publisher('/dvrk/console/power_off', Empty, queue_size=10).publish(data)
+    rospy.Publisher('/dvrk/console/power_off', Empty, latch=True, queue_size=1).publish(Empty())
 def reset(data):
      
     q_ecm = [0.0, 0.0, 0.0, 0.0]

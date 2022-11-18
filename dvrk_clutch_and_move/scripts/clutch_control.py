@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from logging import shutdown
 from __common_imports__ import *
 from mtm import mtm 
 
@@ -24,9 +23,10 @@ class ClutchControl:
         hardware = "HARDWARE"
         
         
-    def __init__(self, mode = MODE.hardware):        
+    def __init__(self, teleop_thread = 0, mode = MODE.simulation):        
         self.__mode__ = mode
-        self.run = True
+        #self.teleop_thread = teleop_thread
+        
         self.camera_clutch_pressed = False
         self.movement_scale = 1.5 
         self.joint_angles = [0,0,0,0]
@@ -71,7 +71,8 @@ class ClutchControl:
         # MTML lock orientation
 #         self.__pub_lock_mtml_orientation__ = rospy.Publisher('/dvrk/MTML/lock_orientation', Quaternion, latch=True, queue_size = 1)
 #         self.__pub_lock_mtmr_orientation__ = rospy.Publisher('/dvrk/MTMR/lock_orientation', Quaternion, latch=True, queue_size = 1)
-
+        
+        
         self.sub_ecm_cb = None
         if self.__mode__ == self.MODE.simulation:
             self.sub_ecm_cb = rospy.Subscriber('/dvrk_ecm/joint_states', JointState, self.__ecm_cb__)
@@ -99,9 +100,6 @@ class ClutchControl:
         self.T_mtmr_pos_init = self.T_mtml_pos_init
 #         self.hw_mtml_orientation.lock_orientation_as_is()
 #         self.hw_mtml_orientation.unlock_orientation()
-
-        #dvrk assistant topics
-        self.sub_run = rospy.Subscriber('/clutch_and_move/run', Bool, self.run_cb )
     
     def shutdown(self):
         try:
@@ -132,11 +130,7 @@ class ClutchControl:
             print("couldn't unregister all the topics")
             pass
 #         rospy.signal_shutdown('shutting down ClutchControl')
-    def run_cb(self, msg):
-        self.run = msg.data
-
-    def set_scale(self, scale):
-        self.movement_scale = scale
+        
     def set_scale(self, scale):
         self.movement_scale = scale
             
@@ -153,49 +147,46 @@ class ClutchControl:
         rospy.spin()
 
     def mtml_joint_angles_cb(self, msg):
-        if self.run:
-            self.mtml_joint_angles = list(msg.position)
-
-            T = self.__mtml_kin__.forward(self.mtml_joint_angles)
-            pos = T[0:3,3]
-            if self.camera_clutch_pressed:
-                if type(self.mtml_starting_point) == NoneType:
-                    self.mtml_starting_point = pos
-
-                # we may multiply the current_position and mtml_pos_before_clutch by some transformation matrix so
-                # the hand controllers feel more intuitive
-
-                movement_vector = pos-self.mtml_pos_before_clutch
-                self.move_mtm_centerpoints()
-#                 print("movement_vector = {}, {}, {}".format(movement_vector[0], movement_vector[1], movement_vector[2]))
-                self.mtml_pos = pos
-                self.ecm_pan_tilt(movement_vector)
-            else:
-#                 self.center = self.joint_angles
-                try:
-                    self.mtml_pos_before_clutch = pos
-                except:
-                    pass
-                
+        self.mtml_joint_angles = list(msg.position)
+        T = self.__mtml_kin__.forward(self.mtml_joint_angles)
+        pos = T[0:3,3]
+        if self.camera_clutch_pressed:
+            if type(self.mtml_starting_point) == NoneType:
+                self.mtml_starting_point = pos
+            
+            # we may multiply the current_position and mtml_pos_before_clutch by some transformation matrix so
+            # the hand controllers feel more intuitive
+            
+            movement_vector = pos-self.mtml_pos_before_clutch
+            self.move_mtm_centerpoints()
+#             print("movement_vector = {}, {}, {}".format(movement_vector[0], movement_vector[1], movement_vector[2]))
+            self.mtml_pos = pos
+            self.ecm_pan_tilt(movement_vector)
+        else:
+#             self.center = self.joint_angles
+            try:
+                self.mtml_pos_before_clutch = pos
+            except:
+                pass
+            
     
     def mtmr_joint_angles_cb(self, msg):
-        if self.run:
-            self.mtmr_joint_angles = list(msg.position)
-
-            T = self.__mtmr_kin__.forward(self.mtmr_joint_angles)
-
-            pos = T[0:3,3]
-            if self.camera_clutch_pressed:
-                if type(self.mtmr_starting_point) == NoneType:
-                    self.mtmr_starting_point = pos
-
-                movement_vector = pos-self.mtmr_pos_before_clutch
-                self.mtmr_pos = pos
-            else:
-                try:
-                    self.mtmr_pos_before_clutch = pos
-                except:
-                    pass
+        self.mtmr_joint_angles = list(msg.position)
+        
+        T = self.__mtmr_kin__.forward(self.mtmr_joint_angles)
+        
+        pos = T[0:3,3]
+        if self.camera_clutch_pressed:
+            if type(self.mtmr_starting_point) == NoneType:
+                self.mtmr_starting_point = pos
+            
+            movement_vector = pos-self.mtmr_pos_before_clutch
+            self.mtmr_pos = pos
+        else:
+            try:
+                self.mtmr_pos_before_clutch = pos
+            except:
+                pass
     
     def psm1_joint_angles_cb(self,msg):
         self.psm1_joint_angles = list(msg.position)
@@ -301,7 +292,7 @@ class ClutchControl:
             if self.camera_clutch_pressed == False:
                 self.camera_clutch_pressed = True
                 self.mtml_starting_point = None
-                #self.teleop_thread.pause() #############################ADD PUBLISH FALSE TO RUN TELEOP
+                #self.teleop_thread.pause()
                 self.hw_mtml_orientation.lock_orientation_as_is()
 #                 self.hw_mtmr_orientation.lock_orientation_as_is()
 #                 self.teleop_thread.lock_mtm_orientations()
@@ -316,21 +307,20 @@ class ClutchControl:
             
                             
     def __ecm_cb__(self, msg):
-        if self.run:
+        if self.__mode__ == self.MODE.simulation:
+            self.joint_angles = msg.position[0:2] + msg.position[-2:]
+        elif self.__mode__ == self.MODE.hardware:
+            self.joint_angles = msg.position[0:3] + tuple([0])
+            
+        if self.camera_clutch_pressed == False:
             if self.__mode__ == self.MODE.simulation:
-                self.joint_angles = msg.position[0:2] + msg.position[-2:]
+                self.center = msg.position[0:2] + msg.position[-2:]
             elif self.__mode__ == self.MODE.hardware:
-                self.joint_angles = msg.position[0:3] + tuple([0])
-
-            if self.camera_clutch_pressed == False:
-                if self.__mode__ == self.MODE.simulation:
-                    self.center = msg.position[0:2] + msg.position[-2:]
-                elif self.__mode__ == self.MODE.hardware:
-                    self.center = msg.position[0:3] + tuple([0])
-                self.center_cart = np.array(self.__ecm_kin__.FK(self.center)[0])
-#               print("self.center is : " + self.center.__str__())  
-#               print("ecm joint angles are : " + msg.position.__str__())
-#               print("self.joint_angles is : " + self.joint_angles.__str__())
+                self.center = msg.position[0:3] + tuple([0])
+            self.center_cart = np.array(self.__ecm_kin__.FK(self.center)[0])
+#         print("self.center is : " + self.center.__str__())  
+#         print("ecm joint angles are : " + msg.position.__str__())
+#         print("self.joint_angles is : " + self.joint_angles.__str__())
     
     def ecm_pan_tilt(self, movement_vector):
         q = []
@@ -441,6 +431,7 @@ class ClutchControl:
         
         R = np.matrix(R)
         return R 
+
 
 if __name__ == "__main__":
     print("Running Clutch Control")
