@@ -1,0 +1,11 @@
+<launch>
+
+  <node name="assistant_bridge" pkg="dvrk_assistant_bridge" type="bridge_node_py.py" output="screen" launch-prefix="gnome-terminal --title=bridge -e"/>
+  <node name="teleop_control" pkg="dvrk_teleop" type="teleoperation.py" output="screen" launch-prefix="gnome-terminal --title=teleop -e"/>
+  <node name="autocamera_control_node" pkg="dvrk_autocamera" type="autocamera_control_node.py" output="screen" launch-prefix="gnome-terminal --title=autocamera -e"/>
+  <node name="joy" pkg="joy" type="joy_node" output="screen" launch-prefix="gnome-terminal --title=joyNode -e" /> 
+  <node name="joystick_control" pkg="dvrk_joystick" type="joystick_camera_control.py" output="screen" launch-prefix="gnome-terminal --title=joystick -e"/>
+
+</launch>
+
+

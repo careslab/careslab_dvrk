@@ -50,7 +50,7 @@ class Autocamera_node_handler:
         self.last_ecm_jnt_pos = None
 
         #Assistant Variables
-        self.run = True
+        self.run = False
         self.track = "middle"
         self.trackSet = False
         self.keep = "middle"

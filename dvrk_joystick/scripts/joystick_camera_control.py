@@ -14,15 +14,15 @@ class JoystickClass:
     RAKE_CONTROL = "RAKE_CONTROL"
     ABSOLUTE_CONTROL = "ABSOLUTE_CONTROL"
     
-    def __init__(self, mode = MODE.simulation):        
+    def __init__(self, mode = MODE.hardware):        
         self.__mode__ = mode
-        self.run = True
+        self.run = False
         self.joint_angles = []
         self.center = [0,0,0,0]
         self.joystick_at_zero = True
         self.movement_scale = .2 
         self.last_z = 0
-        self.control_mode = self.ABSOLUTE_CONTROL 
+        self.control_mode = self.RAKE_CONTROL 
         
     def __init_nodes__(self):
         self.hw_ecm = robot("ECM")
@@ -68,6 +68,9 @@ class JoystickClass:
         rospy.spin()
 
     def __ecm_cb__(self, msg):
+        if not self.run:
+            return
+
         if self.__mode__ == self.MODE.simulation:
             self.joint_angles = msg.position[0:2] + msg.position[-2:]
         elif self.__mode__ == self.MODE.hardware:
@@ -85,6 +88,9 @@ class JoystickClass:
         self.joystick_at_zero = False     
            
     def on_joystick_change_cb(self, message):
+        if not self.run:
+            return
+
         j = Joy()
         if sum( np.abs(message.axes[0:2])) != 0 and self.joystick_at_zero == False:
             return
@@ -189,7 +195,7 @@ class JoystickClass:
         
         p = None
         try:
-            p = self.__ecm_kin__.inverse(ecm_pose)
+            p = self.__ecm_kin__.inverse(ecm_pose,maxiter=10000,eps=.001) 
         except Exception as e:
             rospy.logerr('error')
         if p != None:  

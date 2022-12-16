@@ -17,45 +17,57 @@ __arms_homed__ = False
 # Autocamera Callbacks
 #--------------------------------------------------------
 def autocameraRunCallback(data):
+    print("auto camera run callback")
     rospy.Publisher('/autocamera/run', Bool, latch=True, queue_size=10).publish(data)
 def autocameraTrackCallback(data):
     rospy.Publisher('/autocamera/track', String, latch=True, queue_size=10).publish(data)
+    print("auto camera track callback")
 def autocameraKeepCallback(data):
+    print("auto camera keep callback")
     rospy.Publisher('/autocamera/keep', String, latch=True, queue_size=10).publish(data)
 def autocameraFindToolsCallback(data):
+    print("auto camera find callback")
     rospy.Publisher('/autocamera/find_tools', Empty, latch=True, queue_size=10).publish(data)
 def autocameraInnerZoomCallback(data):
+    print("auto camera inner zoom callback")
     rospy.Publisher('/autocamera/inner_zoom_value', Int16, latch=True, queue_size=10).publish(data)
 def autocameraOuterZoomCallback(data):
+    print("auto camera outer zoom callback")
     rospy.Publisher('/autocamera/outer_zoom_value', Int16, latch=True, queue_size=10).publish(data)
 
 #--------------------------------------------------------
 # Clutch and Move Callbacks
 #--------------------------------------------------------
 def clutchAndMoveRunCallback(data):
+    print("clutch and move callbacks")
     rospy.Publisher('/clutch_and_move/run', Bool, latch=True, queue_size=10).publish(data)
 
 #--------------------------------------------------------
-# Clutch and Move Callbacks
+# Joystick Callbacks
 #--------------------------------------------------------
 def joystickRunCallback(data):
+    print("Joystick callbacks")
     rospy.Publisher('/joystick/run', Bool, latch=True, queue_size=10).publish(data)
 
 #--------------------------------------------------------
 # Bleeding Detection Callbacks
 #--------------------------------------------------------
 def bleedingDetectionRunCallback(data):
+    print("Bleeding callbacks")
     rospy.Publisher('/bleeding_detection/run', String, latch=True, queue_size=10).publish(data)
 
 #--------------------------------------------------------
 # dvrk Callbacks
 #--------------------------------------------------------
+
 def home(data):
-    rospy.Publisher('/dvrk/console/home', Empty, latch=True, queue_size=1).publish()
+    print("dvrk home")
+    rospy.Publisher('/dvrk/console/home', Empty, latch=True, queue_size=1).publish(Empty())
 def powerOff(data):
+    print("dvrk power off")
     rospy.Publisher('/dvrk/console/power_off', Empty, latch=True, queue_size=1).publish(Empty())
 def reset(data):
-     
+    print("dvrk reset")
     q_ecm = [0.0, 0.0, 0.0, 0.0]
     q_psm1 = [0.12544035007602872, 0.2371651265674347, 0.13711766733000003, 0.8391791538250665, -0.12269957678936552, -0.14898520116918784, -0.17461480669754448]
     q_psm2 = [-0.01502071544036667, -0.050506672997428295, 0.14912649789000001, -0.9888977734730169, -0.18391272868428285, -0.05774053780206659, -0.17461480669754453]

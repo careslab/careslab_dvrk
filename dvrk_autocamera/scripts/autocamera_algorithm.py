@@ -324,7 +324,7 @@ class Autocamera:
         output_msg = clean_joints['ecm']
         
         try:
-            p = self.ecm_kin.inverse(ecm_pose, q_guess=output_msg.position, min_joints=None, max_joints=None, maxiter=10000,eps=.005)
+            p = self.ecm_kin.inverse(ecm_pose, q_guess=output_msg.position, min_joints=None, max_joints=None, maxiter=10000,eps=.001)
             
         except Exception as e:
             rospy.logerr('error')
