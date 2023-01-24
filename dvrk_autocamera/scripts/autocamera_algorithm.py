@@ -417,7 +417,7 @@ class Autocamera:
     
         self.logerror(dist(tool_point, tool_point2))
         now = time.time()
-        zoom_time_threshold = .3
+        zoom_time_threshold = .1 # was .3
         
         tools_are_stationary = False
         

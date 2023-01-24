@@ -2,6 +2,8 @@
 from __common_imports__ import *
 from functools import update_wrapper, wraps
 
+run_flag = False
+
 class TeleopClass:
     class MODE:
         """
@@ -22,6 +24,7 @@ class TeleopClass:
         """
         
         self.__mode__ = mode
+        # self.__run__ = False
         
         ## The scale of movements from MTMs to PSMs
         self.scale = 0.5
@@ -466,7 +469,10 @@ class TeleopClass:
         
 #         print(msg)
         # Find mtm end effector position and orientation
-        self.home_arms()
+#        self.home_arms()  Abhilash Commented out home arms.
+
+
+
 #         self.__align_mtms_to_psms__()
         
         if self.__last_ecm_jnt__ is None: return
@@ -808,13 +814,28 @@ class TeleopClass:
         T[0:3,0:3] = orientation
         return T 
 
+def teleop_cb(msg):
+    global run_flag
+    print("teleop cb called")
+    print(msg)
+    run_flag = msg
+
 if __name__ == "__main__":
     print("Running teleop Control")
     rospy.init_node('teleop_control')
+    #Change to line 818, 819 by Abhishek
+    # rospy.Publisher('/assistant/home', Empty, latch=True, queue_size=1).publish(Empty())
+    # time.sleep(10)
+
+    rospy.Subscriber('/assistant/teleop/run', Bool, teleop_cb)
     node_handler = TeleopClass()
     __mode__ = node_handler.MODE.hardware
     print('\nRunning {} in {}\n'.format("teleop",__mode__))
     node_handler.set_mode(__mode__)    
+    
+    while not run_flag:
+        print("press home")
+        time.sleep(1)
     
     try:
         node_handler.spin()

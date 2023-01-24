@@ -1,12 +1,15 @@
 import os
 import rospy
 import rospkg
+import pexpect
 import time
+import subprocess
 from std_msgs.msg import String, Empty, Bool
 
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtWidgets import QWidget, QMessageBox
+
 
 class MyPlugin(Plugin):
 
@@ -53,6 +56,10 @@ class MyPlugin(Plugin):
         self._widget.autocameraRadioButton.pressed.connect(self._on_autocameraRadioButton_pressed)
         self._widget.clutchandMoveRadioButton.pressed.connect(self._on_clutchandMoveRadioButton_pressed)
         self._widget.joystickRadioButton.pressed.connect(self._on_joystickRadioButton_pressed)
+        self._widget.voiceControlRadioButton.pressed.connect(self._on_voiceControlRadioButton_pressed)
+
+        self._widget.StartRecording.pressed.connect(self._on_StartRecording_pressed)
+        self._widget.StopRecording.pressed.connect(self._on_StopRecording_pressed)
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -74,7 +81,7 @@ class MyPlugin(Plugin):
         # Usually used to open a modal configuration dialog
 
     def set_all_control_algorithms_off(self):
-        rospy.Publisher('/assistant/teleop/run', Bool, latch=True, queue_size=1).publish(Bool(False))
+        #rospy.Publisher('/assistant/teleop/run', Bool, latch=True, queue_size=1).publish(Bool(False))
         rospy.Publisher('/assistant/autocamera/run', Bool, latch=True, queue_size=1).publish(Bool(False))
         rospy.Publisher('/assistant/clutch_and_move/run', Bool, latch=True, queue_size=1).publish(Bool(False))
         rospy.Publisher('/assistant/joystick/run', Bool, latch=True, queue_size=1).publish(Bool(False))
@@ -102,15 +109,16 @@ class MyPlugin(Plugin):
         self._widget.clutchlessSystemRadioButton.setEnabled(False)
         self._widget.joystickRadioButton.setEnabled(False)
         self._widget.oculusRadioButton.setEnabled(False)
-        self._widget.teleopRadioButton.setEnabled(False)
+        self._widget.voiceControlRadioButton.setEnabled(False)
 
     def _on_homeButton_pressed(self):
+        rospy.Publisher('/assistant/teleop/run', Bool, latch=True, queue_size=1).publish(Bool(True))
         self._widget.autocameraRadioButton.setEnabled(True)
         self._widget.clutchandMoveRadioButton.setEnabled(True)
         self._widget.clutchlessSystemRadioButton.setEnabled(True)
         self._widget.joystickRadioButton.setEnabled(True)
         self._widget.oculusRadioButton.setEnabled(True)
-        self._widget.teleopRadioButton.setEnabled(True)
+        self._widget.voiceControlRadioButton.setEnabled(True)
 
     def _on_resetButton_pressed(self):
         rospy.Publisher('/assistant/reset', Empty, latch=True, queue_size=1).publish(Empty())
@@ -142,3 +150,23 @@ class MyPlugin(Plugin):
             msg.setText('running joystick')
             retval = msg.exec_()
         self._widget.joystickRadioButton.setChecked(True)
+    
+    def _on_voiceControlRadioButton_pressed(self):
+        os.chdir('/home/cares/catkin_ws/src/careslab_dvrk/dvrk_voice/scripts')
+        subprocess.call([ "gnome-terminal", "-x", "./run_voice.sh"])
+
+    def _on_StartRecording_pressed(self):
+        dir = "/home/cares/catkin_ws/bagfiles/"
+        bag_name = "Test"
+        record_command = """rosbag record /dvrk/MTML/state_joint_current /dvrk/MTMR/state_joint_current /dvrk/PSM1/state_joint_current /dvrk/PSM1/position_cartesian_current
+        /dvrk/PSM2/state_joint_current /dvrk/PSM2/position_cartesian_current
+        /dvrk/ECM/state_joint_current /dvrk/ECM/position_cartesian_current
+        /dvrk/footpedals/clutch /dvrk/footpedals/camera /dvrk/footpedals/coag /joy /image_raw_left/compressed /image_raw_right/compressed  --lz4 --duration=600 -O {}""".format(dir + bag_name + '.bag' )
+        print(record_command)
+        self._shellcmd = pexpect.spawn(record_command)
+
+    def _on_StopRecording_pressed(self):
+        self._shellcmd.sendcontrol('c')
+        self._shellcmd.sendintr()
+        self._shellcmd.close()
+        print('recording finished')

@@ -108,6 +108,10 @@ try:
                     if(cmd == "davinci start auto camera" or cmd == "davinci start"):
 
                         print("Running autocamera")
+                        rospy.Publisher('/assistant/clutch_and_move/run', Bool, latch=True, queue_size=1).publish(Bool(False))
+                        rospy.Publisher('/assistant/joystick/run', Bool, latch=True, queue_size=1).publish(Bool(False))
+                        rospy.Publisher('/assistant/oculus/run', Bool, latch=True, queue_size=1).publish(Bool(False))
+                        rospy.Publisher('/assistant/clutchless/run', Bool, latch=True, queue_size=1).publish(Bool(False))
                         run_pub.publish(True)
                         playsound('sound95.wav')
                         rec.Reset()

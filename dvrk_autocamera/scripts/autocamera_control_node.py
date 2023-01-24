@@ -9,6 +9,7 @@ method. It also provides the capability to record all the movements.
 """
 #QApplication
 #from xmlrpc.client import Boolean
+from pickle import TRUE
 from __common_imports__ import *
 
 import sys
@@ -395,6 +396,8 @@ class Autocamera_node_handler:
             else:
                 temp = list(msg.position[:2]+msg.position[-2:])
                 r = self.hw_ecm.move_joint_list(temp, interpolate=self.first_run)
+                
+
                 if r == True:
                     self.first_run = False
         else:
@@ -470,6 +473,7 @@ class Autocamera_node_handler:
                         
                         # Move everything besides the zoom
                         result = self.hw_ecm.move_joint_list(pos, index=[0,1,2,3], interpolate=self.first_run)
+                        
                         
                     #    x = np.arange(old_zoom, new_zoom, np.sign(new_zoom - old_zoom) * 0.00001)
                     #    y = ( (1/np.sqrt(2*np.pi))*np.e**((-((x-u)**2)/2)))
