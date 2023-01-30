@@ -63,6 +63,7 @@ class Autocamera:
         self.pan_tilt_deadzone_radius = .001
         self.distance_to_midpoint = None
         
+        #These parameters determine the distance (in pixels?) between tools for zoom 
         self.zoom_deadzone_radius = .2
         self.zoom_innerzone_radius = .1
         self.zones_times = {'inner_zone':0, 'outer_zone':0} # Keep track of how long the tools are in each of these 2 zones

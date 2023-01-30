@@ -1,50 +1,46 @@
 <launch>
-  <arg name="node_start_delay" default="5.0" />
+  <!-- <arg name="node_start_delay" default="5.0" /> -->
    <!-- fakecam rviz -->
-  <include file="$(find autocamera)/launch/fakecam.launch"/>  
+  <!-- <include file="$(find autocamera)/launch/fakecam.launch"/>   -->
 
   <!-- ecm rviz -->
-  <include file="$(find autocamera)/launch/ecm.launch">
+  <!-- <include file="$(find autocamera)/launch/ecm.launch">
     <arg name="model" value="$(find autocamera)/model/ecm.xacro"/>
     <arg name="rviz" value="false"/>
     <arg name="rate" default="200" />
-  </include>
+  </include> -->
 
   <!-- psm one -->
-  <include file="$(find autocamera)/launch/psm_one_rviz.launch">
+  <!-- <include file="$(find autocamera)/launch/psm_one_rviz.launch">
     <arg name="model" default="$(find autocamera)/model/psm_one.urdf.xacro"/>
     <arg name="rate" default="200" />
     <arg name="rviz" value="false"/>
     <arg name="ns" default="/dvrk_psm1"/>
-  </include>
+  </include> -->
 
   <!-- psm two -->
-  <include file="$(find autocamera)/launch/psm_one_rviz.launch">
+  <!-- <include file="$(find autocamera)/launch/psm_one_rviz.launch">
     <arg name="model" default="$(find autocamera)/model/psm_two.urdf.xacro"/>
     <arg name="rate" default="200" />
     <arg name="rviz" value="false"/>
     <arg name="ns" default="/dvrk_psm2"/>
-  </include>
+  </include> -->
   
   <!-- mtm left -->
-  <include file="$(find autocamera)/launch/mtm_rviz.launch">
+  <!-- <include file="$(find autocamera)/launch/mtm_rviz.launch">
   	<arg name="model" default="$(find autocamera)/model/mtm_left.urdf.xacro"/>
     <arg name="rate" default="200" />
     <arg name="rviz" value="false"/>
     <arg name="ns" default="/dvrk_mtml"/>
-  </include> 
+  </include>  -->
   
   <!-- mtm right -->
-  <include file="$(find autocamera)/launch/mtm_rviz.launch">
+  <!-- <include file="$(find autocamera)/launch/mtm_rviz.launch">
   	<arg name="model" default="$(find autocamera)/model/mtm_right.urdf.xacro"/>
     <arg name="rate" default="200" />
     <arg name="rviz" value="false"/>
     <arg name="ns" default="/dvrk_mtmr"/>
-  </include>
-
-  <!-- rviz  -->
-  <node name="rviz" pkg="rviz" type="rviz"
-	args="-d $(find autocamera) /rviz/simulation.rviz"/> 
+  </include> -->
 
   
   <node name="assistant_bridge" pkg="dvrk_assistant_bridge" type="bridge_node_py.py" output="screen" launch-prefix="gnome-terminal --title=bridge --"/>
@@ -54,6 +50,9 @@
   <node name="cares_gui" pkg="rqt_gui" type="rqt_gui" output="screen" launch-prefix="gnome-terminal --title=rqt --"/>
   <node name="teleop_control" pkg="dvrk_teleop" type="teleoperation.py" output="screen" launch-prefix="gnome-terminal --title=teleop --"/> 
 
+  <!-- rviz  -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz"
+	args="-d $(find autocamera) /rviz/simulation.rviz"/>  -->
  
 
 </launch>

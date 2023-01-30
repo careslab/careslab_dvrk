@@ -537,6 +537,7 @@ class Autocamera_node_handler:
     def trackCallback(self, msg):
         self.track = msg.data
         self.trackSet = True
+        self.first_run = True  # Abhilash added, this will ensure interpolation when track is called.
         self.autocamera.compute_viewangle(self.joint_angles, self.cam_info, self.track)  # This may not be necessary
 
     def keepCallback(self, msg):
@@ -547,6 +548,10 @@ class Autocamera_node_handler:
 
     def findToolsCallback(self, msg):
         print('Finding Tools')
+        self.track = "middle"
+        self.trackSet = True
+        self.first_run = True  # Abhilash added, this will ensure interpolation when track is called.
+        self.autocamera.compute_viewangle(self.joint_angles, self.cam_info, self.track)  # This may not be necessary
 
     def setInnerZoomCallback(self, msg):
         self.autocamera.zoom_innerzone_radius = msg.data

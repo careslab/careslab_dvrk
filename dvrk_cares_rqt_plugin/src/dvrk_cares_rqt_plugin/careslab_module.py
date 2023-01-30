@@ -1,6 +1,7 @@
 import os
 import rospy
 import rospkg
+import signal
 import pexpect
 import time
 import subprocess
@@ -58,8 +59,9 @@ class MyPlugin(Plugin):
         self._widget.joystickRadioButton.pressed.connect(self._on_joystickRadioButton_pressed)
         self._widget.voiceControlRadioButton.pressed.connect(self._on_voiceControlRadioButton_pressed)
 
-        self._widget.StartRecording.pressed.connect(self._on_StartRecording_pressed)
-        self._widget.StopRecording.pressed.connect(self._on_StopRecording_pressed)
+        self._widget.startRecording.pressed.connect(self._on_startRecording_pressed)
+        self._widget.stopRecording.pressed.connect(self._on_stopRecording_pressed)
+
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -95,6 +97,8 @@ class MyPlugin(Plugin):
         self._widget.homeButton.setEnabled(True)
         self._widget.powerOffButton.setEnabled(True)
         self._widget.resetButton.setEnabled(True)
+        self._widget.startRecording.setEnabled(True)
+        self._widget.stopRecording.setEnabled(True)
 
     def _on_powerOffButton_pressed(self):
         rospy.Publisher('/assistant/power_off', Empty, latch=True, queue_size=1).publish(Empty())
@@ -155,18 +159,33 @@ class MyPlugin(Plugin):
         os.chdir('/home/cares/catkin_ws/src/careslab_dvrk/dvrk_voice/scripts')
         subprocess.call([ "gnome-terminal", "-x", "./run_voice.sh"])
 
-    def _on_StartRecording_pressed(self):
-        dir = "/home/cares/catkin_ws/bagfiles/"
-        bag_name = "Test"
+    def _on_startRecording_pressed(self):
+        self._widget.displayLabel.setText("Recording has started.")
+        subject_value = str(self._widget.subjectValueBox.value())
+        task_value = str(self._widget.taskValueBox.value())
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        directory = '/home/cares/catkin_ws/bagfiles/'
+        folder_name = "Subject_" + subject_value + "/" + "Task_" + task_value
+        folder_path = os.path.join(directory,folder_name)        
+        os.makedirs(folder_path)
+        dir = folder_path + "/"
+        bag_name = "Recording_" + timestr
         record_command = """rosbag record /dvrk/MTML/state_joint_current /dvrk/MTMR/state_joint_current /dvrk/PSM1/state_joint_current /dvrk/PSM1/position_cartesian_current
         /dvrk/PSM2/state_joint_current /dvrk/PSM2/position_cartesian_current
         /dvrk/ECM/state_joint_current /dvrk/ECM/position_cartesian_current
-        /dvrk/footpedals/clutch /dvrk/footpedals/camera /dvrk/footpedals/coag /joy /image_raw_left/compressed /image_raw_right/compressed  --lz4 --duration=600 -O {}""".format(dir + bag_name + '.bag' )
+        /dvrk/footpedals/clutch /dvrk/footpedals/camera /dvrk/footpedals/coag /joy /image_raw_left/compressed /image_raw_right/compressed --lz4 --duration=180 -O {}""".format(dir +bag_name + '.bag' )
         print(record_command)
         self._shellcmd = pexpect.spawn(record_command)
+        self._widget.displayLabel.setText("Recording has started for Subject: "+ subject_value + " Task: " + task_value)
+        
 
-    def _on_StopRecording_pressed(self):
+    def _on_stopRecording_pressed(self):
         self._shellcmd.sendcontrol('c')
         self._shellcmd.sendintr()
         self._shellcmd.close()
         print('recording finished')
+        self._widget.displayLabel.setText("Recording has stopped.")
+
+
+
+
