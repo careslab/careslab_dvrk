@@ -26,6 +26,7 @@ innerZoom_pub = rospy.Publisher('/assistant/autocamera/inner_zoom_value', Float3
 outerZoom_pub = rospy.Publisher('/assistant/autocamera/outer_zoom_value', Float32, queue_size=1, latch=True)
 saveEcm_pub = rospy.Publisher('/assistant/save_ecm_position', Int16, queue_size=1)
 gotoEcm_pub = rospy.Publisher('/assistant/goto_ecm_position', Int16, queue_size=1)
+voiceCommand_pub = rospy.Publisher('/voice_command', String, queue_size=1)
 
 q = queue.Queue()
 
@@ -113,12 +114,14 @@ try:
                         rospy.Publisher('/assistant/oculus/run', Bool, latch=True, queue_size=1).publish(Bool(False))
                         rospy.Publisher('/assistant/clutchless/run', Bool, latch=True, queue_size=1).publish(Bool(False))
                         run_pub.publish(True)
+                        voiceCommand_pub.publish("Da Vinci Start")
                         playsound('sound95.wav')
                         rec.Reset()
 
                     elif(cmd == "davinci stop auto camera" or cmd == "davinci stop"):
                         print("Stopping autocamera")
                         run_pub.publish(False)
+                        voiceCommand_pub.publish("Da Vinci Stop")
                         playsound('sound95.wav')
                         rec.Reset()
 
@@ -126,12 +129,14 @@ try:
                     elif(cmd == "davinci track right"):
                         print("Tracking right")
                         track_pub.publish("right")
+                        voiceCommand_pub.publish("Da Vinci track right")
                         playsound('sound95.wav')
                         rec.Reset()
 
                     elif(cmd == "davinci track left"):
                         print("Tracking left")
                         track_pub.publish("left")
+                        voiceCommand_pub.publish("Da Vinci track left")
                         playsound('sound95.wav')
                         rec.Reset()
 
@@ -139,6 +144,7 @@ try:
                          cmd == "davinci track off"):
                         print("Tracking middle")
                         track_pub.publish("middle")
+                        voiceCommand_pub.publish("Da Vinci track middle")
                         playsound('sound95.wav')
                         rec.Reset()
 
@@ -146,12 +152,14 @@ try:
                     elif(cmd == "davinci keep right"):
                         print("Keeping right")
                         keep_pub.publish("right")
+                        voiceCommand_pub.publish("Da Vinci keep right")
                         playsound('sound95.wav')
                         rec.Reset()
 
                     elif(cmd == "davinci keep left"):
                         print("Keeping left")
                         keep_pub.publish("left")
+                        voiceCommand_pub.publish("Da Vinci keep left")
                         playsound('sound95.wav')
                         rec.Reset()
 
@@ -159,6 +167,7 @@ try:
                          cmd == "davinci keep off"):
                         print("Keeping middle")
                         keep_pub.publish("middle")
+                        voiceCommand_pub.publish("Da Vinci keep middle")
                         playsound('sound95.wav')
                         rec.Reset()
 
@@ -167,6 +176,7 @@ try:
                          cmd == "davinci find my tools"):
                         print("Finding tools")
                         findtools_pub.publish()
+                        voiceCommand_pub.publish("Da Vinci find my tools")
                         playsound('sound95.wav')
                         rec.Reset()
                         

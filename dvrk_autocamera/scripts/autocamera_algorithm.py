@@ -413,7 +413,7 @@ class Autocamera:
         
         tool_in_view = lambda tool, safespace : \
         tool[0] > safespace or tool[1] > safespace or tool_point[0] < (cam_info.width-safespace) or \
-        tool[1] < (cam_info.height-safespace) 
+        tool[1] < (cam_info.height-safespace)
         dist = lambda a,b : norm( [i-j for i,j in zip(a,b)] )
     
         self.logerror(dist(tool_point, tool_point2))
@@ -423,14 +423,19 @@ class Autocamera:
         tools_are_stationary = False
         
         if self.tool_timer['psm1_stationary_duration'] > zoom_time_threshold and self.tool_timer['psm2_stationary_duration'] > zoom_time_threshold:
+            # print(self.tool_timer['psm1_stationary_duration'])
             tools_are_stationary = True     
         
         # Inner zone
         if dist(tool_point, mid_point) < abs(r): # the tool's distance from the mid_point < r
+            print("inner zone")
+            print(tools_are_stationary)
             d =  abs(r) - dist(tool_point, mid_point)
             # return positive value
             if self.zones_times['inner_zone'] > 0:
+                print("first if")
                 if (now - self.zones_times['inner_zone'] > zoom_time_threshold) and tools_are_stationary:
+                    print(now - self.zones_times['inner_zone'])
                     return 0.001 # * d/abs(r) # in meters
             else:
                 self.zones_times['inner_zone'] = time.time()

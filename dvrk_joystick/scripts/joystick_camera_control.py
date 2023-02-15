@@ -16,7 +16,7 @@ class JoystickClass:
     
     def __init__(self, mode = MODE.hardware):        
         self.__mode__ = mode
-        self.run = False
+        self.run = True
         self.joint_angles = []
         self.center = [0,0,0,0]
         self.joystick_at_zero = True
@@ -39,7 +39,7 @@ class JoystickClass:
             self.hw_ecm.move_joint_list([0.0,0.0,0.0,0.0], interpolate=True)
             
         self.sub_joy = rospy.Subscriber('/joy', Joy, self.on_joystick_change_cb)
-
+        self.sub_reset = rospy.Subscriber('/assistant/reset', Empty, self.on_reset_cb)
         #dvrk assistant topics
         self.sub_run = rospy.Subscriber('/joystick/run', Bool, self.run_cb)
         
@@ -60,6 +60,7 @@ class JoystickClass:
 
     def run_cb(self, msg):
         self.run = msg.data
+        print("running joystick: {}".format(self.run))
                 
     def spin(self):
         self.__init_nodes__()
@@ -86,6 +87,9 @@ class JoystickClass:
         self.center[3] = self.joint_angles[3]
         self.last_z = 0
         self.joystick_at_zero = False     
+    
+    def on_reset_cb(self, msg):
+        self.center[2] = 0.0
            
     def on_joystick_change_cb(self, message):
         if not self.run:
@@ -119,7 +123,7 @@ class JoystickClass:
         if z == 0.0 :
             return q
         if z > 0 and q[2] < .21: # Zoom in
-            q[2] = self.joint_angles[2] + .0002
+            q[2] = self.joint_angles[2] + .0002 
         elif z < 0:
             q[2] = self.joint_angles[2] - .0002
 #         if q[2] < 0 :

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>455</width>
-    <height>424</height>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -326,7 +326,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>300</y>
+     <y>340</y>
      <width>131</width>
      <height>17</height>
     </rect>
@@ -366,7 +366,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>320</y>
+     <y>360</y>
      <width>141</width>
      <height>71</height>
     </rect>
@@ -411,10 +411,13 @@
    </widget>
   </widget>
   <widget class="QSpinBox" name="subjectValueBox">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>241</y>
+     <y>261</y>
      <width>48</width>
      <height>20</height>
     </rect>
@@ -427,7 +430,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>240</y>
+     <y>260</y>
      <width>91</width>
      <height>20</height>
     </rect>
@@ -467,7 +470,7 @@
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>300</y>
+     <y>340</y>
      <width>131</width>
      <height>17</height>
     </rect>
@@ -486,7 +489,7 @@
    <property name="geometry">
     <rect>
      <x>200</x>
-     <y>330</y>
+     <y>370</y>
      <width>181</width>
      <height>51</height>
     </rect>
@@ -505,7 +508,7 @@
    <property name="geometry">
     <rect>
      <x>190</x>
-     <y>320</y>
+     <y>360</y>
      <width>201</width>
      <height>71</height>
     </rect>
@@ -518,23 +521,26 @@
    </property>
   </widget>
   <widget class="QSpinBox" name="taskValueBox">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>110</x>
-     <y>270</y>
+     <y>290</y>
      <width>48</width>
      <height>20</height>
     </rect>
    </property>
    <property name="minimum">
-    <number>1</number>
+    <number>0</number>
    </property>
   </widget>
   <widget class="QLabel" name="taskLabel">
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>270</y>
+     <y>290</y>
      <width>91</width>
      <height>20</height>
     </rect>
@@ -564,12 +570,101 @@
     <enum>QFrame::Raised</enum>
    </property>
    <property name="text">
-    <string>Task</string>
+    <string>Pattern</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
+  <widget class="QRadioButton" name="voiceButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>260</y>
+     <width>112</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Voice</string>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="joystickButton">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>290</y>
+     <width>112</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Joystick</string>
+   </property>
+  </widget>
+  <widget class="QFrame" name="testMode">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>259</y>
+     <width>101</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="runModeLabel_2">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>240</y>
+     <width>72</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>10</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>20</height>
+    </size>
+   </property>
+   <property name="font">
+    <font>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <property name="text">
+    <string>Test Mode</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <zorder>testMode</zorder>
   <zorder>frame</zorder>
   <zorder>recordFrame</zorder>
   <zorder>powerFrame</zorder>
@@ -583,6 +678,9 @@
   <zorder>displayLabel</zorder>
   <zorder>taskValueBox</zorder>
   <zorder>taskLabel</zorder>
+  <zorder>voiceButton</zorder>
+  <zorder>joystickButton</zorder>
+  <zorder>runModeLabel_2</zorder>
  </widget>
  <resources/>
  <connections/>
