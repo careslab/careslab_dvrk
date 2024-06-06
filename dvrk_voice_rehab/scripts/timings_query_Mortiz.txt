@@ -1,0 +1,13 @@
+stop 2.0493818819522858 - - wrong - should be start
+keep left 0.3395433179102838
+keep right 0.2902435399591923
+keep right 0.28951997589319944 - wrong - should be keep middle
+track middle 0.29052577214315534
+track left 0.2979522431269288
+track middle 0.28878871677443385
+keep right 0.2963648233562708
+start video 0.28162593487650156
+start video 0.28603978687897325 - wrong - should be stop video
+stop video 0.2806476498953998
+take picture 0.28612220287323
+stop 1.5624628639779985
