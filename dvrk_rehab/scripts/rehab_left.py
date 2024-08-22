@@ -558,7 +558,7 @@ class TeleopClass:
                 temp[3] = new_roll
                 new_psm2_angles[3] = new_roll
                 
-            
+        #Abhilash uncommented.     
         #if self.__mode__ == self.MODE.hardware:            
             #self.__hw_psm2__.move_joint_list( new_psm2_angles.tolist(), range(0,len(new_psm2_angles)), interpolate=False)
         
@@ -753,8 +753,10 @@ class TeleopClass:
             msg = Float64MultiArray()
             q_mtmr =  list(mtm_target_joint_msg.position)
             # Reverse wrist_platform and wrist_roll joints
-            q_mtmr[3] = -q_mtmr[3]
-            q_mtmr[6] = -q_mtmr[6]
+            q_mtmr[0] = -q_mtmr[0] #added first joint in the system to be negative. 
+            q_mtmr[3] = -q_mtmr[3]  
+            q_mtmr[5] = -q_mtmr[5]
+            q_mtmr[6] = -q_mtmr[6] 
 
             msg.data = q_mtmr
             # Publish joint states to the target MTM
@@ -768,8 +770,10 @@ class TeleopClass:
         msg = Float64MultiArray()
         q_mtml =  list(mtm_target_joint_msg.position)
         # Reverse wrist_platform and wrist_roll joints
+        q_mtml[0] = -q_mtml[0] #added first joint in the system to be negative. 
         q_mtml[3] = -q_mtml[3]
-        q_mtml[6] = -q_mtml[6]
+        q_mtml[5] = -q_mtml[5]
+        q_mtml[6] = -q_mtml[6] 
 
         msg.data = q_mtml
         # Publish joint states to the target MTM
