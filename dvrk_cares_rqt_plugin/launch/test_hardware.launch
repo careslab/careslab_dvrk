@@ -48,7 +48,8 @@
   <node name="joy" pkg="joy" type="joy_node" output="screen" launch-prefix="gnome-terminal --title=joyNode --" /> 
   <node name="joystick_control" pkg="dvrk_joystick" type="joystick_camera_control.py" output="screen" launch-prefix="gnome-terminal --title=joystick --"/>
   <node name="cares_gui" pkg="rqt_gui" type="rqt_gui" output="screen" launch-prefix="gnome-terminal --title=rqt --"/>
-  <node name="teleop_control" pkg="dvrk_teleop" type="teleoperation.py" output="screen" launch-prefix="gnome-terminal --title=teleop --"/> 
+  <node name="teleop_control" pkg="dvrk_teleop" type="teleoperation.py" output="screen" launch-prefix="gnome-terminal --title=teleop --"/>
+  <node name="camera_publisher" pkg="simple_camera_publisher" type="cam_pub_py.py" output="screen" />   
 
   <!-- rviz  -->
   <!-- <node name="rviz" pkg="rviz" type="rviz"

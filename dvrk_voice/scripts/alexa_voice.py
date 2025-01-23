@@ -35,6 +35,7 @@ innerZoom_pub = rospy.Publisher('/assistant/autocamera/inner_zoom_value', Float3
 outerZoom_pub = rospy.Publisher('/assistant/autocamera/outer_zoom_value', Float32, queue_size=1, latch=True)
 saveEcm_pub = rospy.Publisher('/assistant/save_ecm_position', Int16, queue_size=1)
 gotoEcm_pub = rospy.Publisher('/assistant/goto_ecm_position', Int16, queue_size=1)
+voiceCommand_pub = rospy.Publisher('/voice_command', String, queue_size=1)
 ecm_saved_positions=[]
 
 
@@ -57,9 +58,11 @@ def autocamera_run(run):
     #publish to run topic 
     if(run == "start"):
         run_pub.publish(True)
+        voiceCommand_pub.publish("Da Vinci Start")
 
     elif(run == "stop"):
         run_pub.publish(False)
+        voiceCommand_pub.publish("Da Vinci Stop")
 
     #return what alexa would say when done
     say = 'Done'
@@ -77,12 +80,15 @@ def autocamera_track(tool):
     #publish to track topic 
     if(tool == "right"):
         track_pub.publish("right")
+        voiceCommand_pub.publish("Da Vinci track right")
 
     elif(tool == "left"):
         track_pub.publish("left")
+        voiceCommand_pub.publish("Da Vinci track left")
 
     elif(tool == "middle"):
         track_pub.publish("middle")
+        voiceCommand_pub.publish("Da Vinci track middle")
 
     say = 'Done'
     return statement(say)
@@ -99,12 +105,15 @@ def autocamera_keep(tool):
     #publish to track topic 
     if(tool == "right"):
         keep_pub.publish("right")
+        voiceCommand_pub.publish("Da Vinci keep right")
 
     elif(tool == "left"):
         keep_pub.publish("left")
+        voiceCommand_pub.publish("Da Vinci keep left")
 
     elif(tool == "middle"):
         keep_pub.publish("middle")
+        voiceCommand_pub.publish("Da Vinci keep middle")
 
     say = 'Done'
     return statement(say)
@@ -116,6 +125,7 @@ def autocamera_findtools():
 
     #publish to find tools topic
     findtools_pub.publish()
+    voiceCommand_pub.publish("Da Vinci find my tools")
 
     say = 'Done'
     return statement(say)

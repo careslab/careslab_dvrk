@@ -8,6 +8,7 @@ import sys
 import threading
 from playsound import playsound
 
+import openai
 
 import rospy
 from std_msgs.msg import Empty
@@ -27,9 +28,72 @@ outerZoom_pub = rospy.Publisher('/assistant/autocamera/outer_zoom_value', Float3
 saveEcm_pub = rospy.Publisher('/assistant/save_ecm_position', Int16, queue_size=1)
 gotoEcm_pub = rospy.Publisher('/assistant/goto_ecm_position', Int16, queue_size=1)
 voiceCommand_pub = rospy.Publisher('/voice_command', String, queue_size=1)
+picture_pub = rospy.Publisher('/assistant/take_picture', Bool, queue_size=1)
+video_pub = rospy.Publisher('/assistant/take_video', Bool, queue_size=1)
 
 q = queue.Queue()
 
+#Chat GPT routines and limited choices. 
+
+#define choice for chatgpt
+choices = {'TR': 'davinci track right', 'TL': 'davinci track left', 'TM': 'davinci track middle', 
+           'ST': 'davinci start', 'SX': 'davinci stop', 'KL': 'davinci keep left', 'KR': 'davinci keep right', 'FT': 'davinci find tools', 
+           'TP': 'davinci take picture', 'SV': 'davinci start video', 'XV': 'davinci stop video', 'NV': 'Something not valid'}
+
+#we limit the output of chattpt to only these commands. 
+listofpossiblecommands = "TR TL TM ST SX KL KR FT TP SV XV NV"
+
+#get the key
+openai.api_key = os.getenv('OPENAI_API_KEY')
+
+def AskGPT (prompt):
+####################################################################
+# This function takes a command like 'plese track the left tool' and 
+# provides chatgpt some examples on how to answer the command.  Note
+# that the return value is only one of the choices in the choices array
+# above.   These choices should all have actions in the calling program.
+#####################################################################
+    completions = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        temperature = 0.7,
+        messages=[
+            #realtime training data... we can limit this to 3-4 times and then simplify the command to just the last part. 
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "Given this phrase: 'Track the right tool' return the letters correspoing to the right answer: 'TR': 'track or follow the right tool', 'TL': 'track or follow the left' \
+                'TM': 'track or follow the middle of the tools', 'ST': 'start or start moving camera', 'SX': 'stop or stop everything', 'KL': 'keep the left tool in view', 'KR': 'keep the right tool in view', 'FT': 'davinci find my tools', 'TP': 'take picture',\
+                'SV': 'indication to start a video recording', 'XV': 'indications to stop the video recording', 'NV': 'something not valid or not understood"
+            },
+            {"role": "assistant", "content": "TR"},
+
+            {"role": "user", "content": "Start playing the video"},
+            {"role": "assistant", "content":  "SV"},
+
+            {"role": "user", "content": "'Please take a picture of the scene'"}, 
+            {"role": "assistant", "content":  "TP"},
+
+            {"role": "user", "content": "'something not on the list of options or not valid has been said'"} ,
+            {"role": "assistant", "content":  "NV"},
+
+            #This is the acutial question to the chatgpt.
+            {"role": "user", "content": prompt}    
+        ]
+    )
+        
+    #extract the index. The index is a two character string
+    index = completions['choices'][0]['message']['content']
+
+    #check to make sure that it is only 2 characters...otherwise, GPT may have returened a novel ;-)
+    if (index in listofpossiblecommands) and len(index) == 2:
+        print ("=====>")
+        print(index) 
+        return (choices [index])
+    else:
+        print("didn't understand")
+        return (choices["NV"]) # NV is an index 
+
+################################################################
+
+    
 def int_or_str(text):
     """Helper function for argument parsing."""
     try:
@@ -87,6 +151,8 @@ try:
     else:
         dump_fn = None
 
+ 
+
     with sd.RawInputStream(samplerate=args.samplerate, blocksize = 4000, device=args.device, dtype='int16',
                             channels=1, callback=callback):
             print('#' * 80)
@@ -94,20 +160,38 @@ try:
             print('#' * 80)
 
             rec = vosk.KaldiRecognizer(model, args.samplerate)
+            prevprompt =""
+            prompt = ""
+            cmd =""
             while True:
                 data = q.get()
                 if rec.AcceptWaveform(data):
                     #publish to run topic 
                     res = json.loads(rec.Result())
-                    cmd = res['text']
-                    #print (cmd)
+                    prompt = res['text']
+
 
                 else:
                     res = json.loads(rec.PartialResult())
-                    cmd = res['partial']
+                    prevprompt = prompt
+                    prompt = res['partial']
+                    
+                    #Ask GPT to interpret the user commands... only if the command has a pause and is 
+                    # complete. Here we assume if the partial and the propmt are both blank, and the previous prompt is not
+                    # blank, then a complete pharase has been issued.
+                    #  
+                    if ((res['partial'] == "") and (prompt == "") and (prevprompt != "")) :
+                        #print("sending ===> to chatgpt")
+                        print (prevprompt)
+                        #We then ask GPT to figure out what the user wants to be done.
+                        #the function returns an index to the list of items that are in choices.
+                        cmd = AskGPT (prevprompt)
+                        prevpromt ="" #wipe out the previous prompt
+                        
+                    
+                    #execute the command
 
                     if(cmd == "davinci start auto camera" or cmd == "davinci start"):
-
                         print("Running autocamera")
                         rospy.Publisher('/assistant/clutch_and_move/run', Bool, latch=True, queue_size=1).publish(Bool(False))
                         rospy.Publisher('/assistant/joystick/run', Bool, latch=True, queue_size=1).publish(Bool(False))
@@ -180,10 +264,40 @@ try:
                         playsound('sound95.wav')
                         rec.Reset()
                         
+                    elif cmd == "davinci take picture":
+                        print("Taking picture")
+                        picture_pub.publish(True)
+                        voiceCommand_pub.publish("Da Vinci take picture")
+                        playsound('sound95.wav')
+                        picture_pub.publish(False)
+                        rec.Reset()
+
+                    elif cmd == "davinci start video":
+                        print("Starting video")
+                        video_pub.publish(True)
+                        voiceCommand_pub.publish("Da Vinci begin recording")
+                        playsound('sound95.wav')
+                        rec.Reset()
+
+                    elif cmd == "davinci stop video":
+                        print("Stopping video")
+                        video_pub.publish(False)
+                        voiceCommand_pub.publish("Da Vinci end recording")
+                        playsound('sound95.wav')
+                        rec.Reset()
+                  
+                    elif cmd == "Something not valid":
+                        print("Not valid")
+                        playsound('repeat.wav')
+                        rec.Reset()
+
                     else:
                         pass
 
                     #print(rec.PartialResult())
+                #reset the command.
+                cmd =""
+                
 
                 if dump_fn is not None:
                     dump_fn.write(data)
@@ -195,3 +309,4 @@ except KeyboardInterrupt:
     parser.exit(0)
 except Exception as e:
     parser.exit(type(e).__name__ + ': ' + str(e))
+

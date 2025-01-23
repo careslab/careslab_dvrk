@@ -1,4 +1,5 @@
 import os
+# import sys
 import rospy
 import rospkg
 import signal
@@ -31,6 +32,8 @@ class MyPlugin(Plugin):
             #print 'arguments: ', args
             #print 'unknowns: ', unknowns
 
+        # self._app = QApplication(sys.argv)
+
         # Create QWidget
         self._widget = QWidget()
         # Get path to UI file which should be in the "resource" folder of this package
@@ -53,6 +56,7 @@ class MyPlugin(Plugin):
         self._widget.powerOffButton.pressed.connect(self._on_powerOffButton_pressed)
         self._widget.homeButton.pressed.connect(self._on_homeButton_pressed)
         self._widget.resetButton.pressed.connect(self._on_resetButton_pressed)
+        # self._widget.exitButton.pressed.connect(self._on_exitButton_pressed)
 
         self._widget.autocameraRadioButton.pressed.connect(self._on_autocameraRadioButton_pressed)
         self._widget.clutchandMoveRadioButton.pressed.connect(self._on_clutchandMoveRadioButton_pressed)
@@ -61,7 +65,7 @@ class MyPlugin(Plugin):
 
         self._widget.startRecording.pressed.connect(self._on_startRecording_pressed)
         self._widget.stopRecording.pressed.connect(self._on_stopRecording_pressed)
-
+        # self._widget.startTimer.pressed.connect(self._on_startTimer_pressed)
 
     def shutdown_plugin(self):
         # TODO unregister all publishers here
@@ -98,7 +102,12 @@ class MyPlugin(Plugin):
         self._widget.powerOffButton.setEnabled(True)
         self._widget.resetButton.setEnabled(True)
         self._widget.startRecording.setEnabled(True)
-        self._widget.stopRecording.setEnabled(True)
+        self._widget.voiceButton.setEnabled(True)
+        self._widget.joystickButton.setEnabled(True)
+        self._widget.subjectValueBox.setEnabled(True)
+        self._widget.taskValueBox.setEnabled(True)
+        # self._widget.startTimer.setEnabled(True)
+
 
     def _on_powerOffButton_pressed(self):
         rospy.Publisher('/assistant/power_off', Empty, latch=True, queue_size=1).publish(Empty())
@@ -127,6 +136,10 @@ class MyPlugin(Plugin):
     def _on_resetButton_pressed(self):
         rospy.Publisher('/assistant/reset', Empty, latch=True, queue_size=1).publish(Empty())
         print("RAN RESET")
+
+    # def _on_exitButton_pressed(self):
+        # print('Exiting...')
+        # sys.exit(self._app.exec_())       
 
     def _on_autocameraRadioButton_pressed(self):
         if not self._widget.autocameraRadioButton.isChecked():
@@ -160,32 +173,50 @@ class MyPlugin(Plugin):
         subprocess.call([ "gnome-terminal", "-x", "./run_voice.sh"])
 
     def _on_startRecording_pressed(self):
+        self._widget.stopRecording.setEnabled(True)      
+        if self._widget.voiceButton.isChecked():
+            mode = "Voice"
+            self._widget.voiceButton.setChecked(True)
+        if self._widget.joystickButton.isChecked():
+            mode = "Joystick"
+            self._widget.joystickButton.setChecked(True)            
         self._widget.displayLabel.setText("Recording has started.")
         subject_value = str(self._widget.subjectValueBox.value())
         task_value = str(self._widget.taskValueBox.value())
         timestr = time.strftime("%Y%m%d-%H%M%S")
         directory = '/home/cares/catkin_ws/bagfiles/'
-        folder_name = "Subject_" + subject_value + "/" + "Task_" + task_value
+        folder_name = "Subject_" + subject_value + "/" + "Mode_" + mode + "/"
         folder_path = os.path.join(directory,folder_name)        
-        os.makedirs(folder_path)
-        dir = folder_path + "/"
-        bag_name = "Recording_" + timestr
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+        dir = folder_path + '/'
+        bag_name = "Subject_" + subject_value + "_" + "Mode_" + mode + "_" + "Pattern_" + task_value + "_" + timestr
         record_command = """rosbag record /dvrk/MTML/state_joint_current /dvrk/MTMR/state_joint_current /dvrk/PSM1/state_joint_current /dvrk/PSM1/position_cartesian_current
-        /dvrk/PSM2/state_joint_current /dvrk/PSM2/position_cartesian_current
-        /dvrk/ECM/state_joint_current /dvrk/ECM/position_cartesian_current
-        /dvrk/footpedals/clutch /dvrk/footpedals/camera /dvrk/footpedals/coag /joy /image_raw_left/compressed /image_raw_right/compressed --lz4 --duration=180 -O {}""".format(dir +bag_name + '.bag' )
+        /dvrk/PSM2/state_joint_current /dvrk/PSM2/position_cartesian_current /dvrk/ECM/state_joint_current /dvrk/ECM/position_cartesian_current
+        /dvrk/footpedals/clutch /dvrk/footpedals/camera /dvrk/footpedals/coag /joy /voice_command /image_raw_left /image_raw_right --lz4 --duration=180 -O {}""".format(dir +bag_name + '.bag' )
         print(record_command)
         self._shellcmd = pexpect.spawn(record_command)
-        self._widget.displayLabel.setText("Recording has started for Subject: "+ subject_value + " Task: " + task_value)
-        
-
+        self._widget.displayLabel.setText("Recording has started for Subject: " + subject_value + " Mode: " + mode + " Pattern: " + task_value)
+      
     def _on_stopRecording_pressed(self):
-        self._shellcmd.sendcontrol('c')
-        self._shellcmd.sendintr()
-        self._shellcmd.close()
-        print('recording finished')
-        self._widget.displayLabel.setText("Recording has stopped.")
-
-
-
+            self._shellcmd.sendcontrol('c')
+            self._shellcmd.sendintr()
+            self._shellcmd.close()
+            print('recording finished')
+            self._widget.displayLabel.setText("Recording has stopped.")
+            self._widget.stopRecording.setEnabled(False)
+    
+    # def _on_startTimer_pressed(self):
+    #     print("start timer: 3 minutes")
+    #     self._start = time.time()
+    #     while True:
+    #         self._elapsed = time.time() - self._start
+    #         if self._elapsed >= 180:
+    #             print("stop timer")
+    #             msg = QMessageBox()
+    #             msg.setText('Please stop recording.')
+    #             retval = msg.exec_()
+    #             break
+    #         time.sleep(1)
+    #     # self._widget.startTimer.setEnabled(True)
 
