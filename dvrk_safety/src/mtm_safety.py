@@ -72,7 +72,7 @@ def calculate_initial_centroid():
             initial_centroid_x = (initial_left_gripper_position_x + initial_right_gripper_position_x) / 2
             initial_centroid_y = (initial_left_gripper_position_y + initial_right_gripper_position_y) / 2
             initial_centroid_z = (initial_left_gripper_position_z + initial_right_gripper_position_z) / 2
-            rospy.loginfo("Initial Centroid set: x=%f, y=%f, z=%f", initial_centroid_x, initial_centroid_y, initial_centroid_z)
+            # rospy.loginfo("Initial Centroid set: x=%f, y=%f, z=%f", initial_centroid_x, initial_centroid_y, initial_centroid_z)
 
 
 def calculate_centroid(event):
@@ -84,19 +84,22 @@ def calculate_centroid(event):
         centroid_y = (left_gripper_position.position.y + right_gripper_position.position.y) / 2
         centroid_z = (left_gripper_position.position.z + right_gripper_position.position.z) / 2
 
-        rospy.loginfo("Centroid: x=%f, y=%f, z=%f", centroid_x, centroid_y, centroid_z)
+        # rospy.loginfo("Centroid: x=%f, y=%f, z=%f", centroid_x, centroid_y, centroid_z)
+
+        rospy.loginfo("%f %f %f", centroid_x, centroid_y, centroid_z)
 
         if (abs(centroid_x - initial_centroid_x) > centroid_drift_threshold or
             abs(centroid_y - initial_centroid_y) > centroid_drift_threshold or
             abs(centroid_z - initial_centroid_z) > centroid_drift_threshold):
             centroid_drift_count += 1
-            rospy.loginfo("Centroid drift detected. Count: %d", centroid_drift_count)
+            # rospy.loginfo("Centroid drift detected. Count: %d", centroid_drift_count)'
+            rospy.loginfo("Drift")
 
         else:
             centroid_drift_count -=1
             if centroid_drift_count < 0:
                 centroid_drift_count =0
-            rospy.loginfo("Centroid drift not detected!!!!!! Count: %d", centroid_drift_count)
+            # rospy.loginfo("Centroid drift not detected!!!!!! Count: %d", centroid_drift_count)
     
     
     mtm_safety_publisher.publish(Float64(centroid_drift_count))

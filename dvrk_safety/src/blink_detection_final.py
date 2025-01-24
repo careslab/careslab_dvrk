@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import cv2
 import numpy as np
 import rospy
@@ -14,7 +16,7 @@ class BlinkDetector:
         self.org = (50, 50)
         self.fontScale = 1
         self.font_color = (0, 0, 0)
-        self.thickness = 2
+        self.thickness = 2  
         self.tracker = cv2.TrackerCSRT.create()
         self.backup = cv2.TrackerCSRT.create()
         ret, frame = self.cap.read()

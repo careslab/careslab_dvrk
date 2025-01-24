@@ -90,6 +90,8 @@ def calculate_collision():
     #else:
     #    smoothed_positions = np.array(psm1_current_position_buffer)
 
+
+
     if psm1_current_position_buffer and headsensor == 1:
         psm1_velocity_diff = np.diff(psm1_current_position_buffer, axis=0)
         psm1_acceleration_diff = np.diff(psm1_velocity_diff, axis=0)
@@ -109,7 +111,7 @@ def calculate_collision():
         pos2 = np.array([psm2_transformed_position.x, psm2_transformed_position.y, psm2_transformed_position.z])
         distance = np.linalg.norm(pos1 - pos2)
         print("Distance", distance)
-        #print("Jerk", psm1_jerk_diff)
+        print("Jerk", psm1_jerk_diff)
         if distance < 0.05 and np.any(abs(psm1_jerk_diff[:, :]) > 0.03): # Does not include psm2 jerk
             print("Potential collision based on distance and jerk")
             count += 1
@@ -136,7 +138,7 @@ def calculate_collision_cartesian():
     #print(psm1_jerk_diff)
     psm1_jerk_diff_rounded = np.round(psm1_jerk_diff, decimals=4)
 
-    #print(psm1_jerk_diff_rounded) 
+    print(psm1_jerk_diff_rounded) 
 
     if np.any(abs(psm1_jerk_diff[:, :]) > 0.0001 ):
         print("Collision detected based on jerk cartesian")
@@ -156,8 +158,8 @@ def psm_safety():
     rospy.Subscriber('/dvrk/PSM2/state_joint_current', JointState, psm2_current_callback, queue_size=1, tcp_nodelay=True)
     rospy.Subscriber('/dvrk/PSM1/position_cartesian_current', PoseStamped, psm1_cartesian_pos_callback, queue_size=1, tcp_nodelay=True)
     rospy.Subscriber('/dvrk/PSM2/position_cartesian_current', PoseStamped, psm2_cartesian_pos_callback, queue_size=1, tcp_nodelay=True)
-    rospy.Subscriber('/autocamera/PSM1/transformed_position', Point, psm1_transformed_pos_callback, queue_size=1, tcp_nodelay=True)
-    rospy.Subscriber('/autocamera/PSM2/transformed_position', Point, psm2_transformed_pos_callback, queue_size=1, tcp_nodelay=True)
+    rospy.Subscriber('/autocamera/PSM1/transformed_position', Point, psm1_transformed_pos_callback, queue_size=1, tcp_nodelay=True) #This is from autocamera_algorithm.py
+    rospy.Subscriber('/autocamera/PSM2/transformed_position', Point, psm2_transformed_pos_callback, queue_size=1, tcp_nodelay=True) #This is from autocamera_algorithm.py
     rospy.Subscriber('/dvrk/footpedals/coag', Joy, headsensor_callback , queue_size=1, tcp_nodelay=True)
     psm_safety_publisher = rospy.Publisher('/safety/psm', Float64, queue_size=10)
     rospy.spin()

@@ -17,6 +17,7 @@ import hrl_geom
 import geometry_msgs
 import cv2
 import tf
+import numpy as np
 
 from hrl_geom.pose_converter import PoseConv
 from hrl_geom import transformations
@@ -70,7 +71,12 @@ class Autocamera:
         
         self.zoom_level_positions = {'l1':None, 'r1':None, 'l2':None, 'r2':None, 'lm':None, 'rm':None}
         self.logerror("autocamera_initialized")
+
+        #Reenu added below lines for dvrk_safety(psm_safety)
+        self.psm1_pos_transformed = rospy.Publisher('/autocamera/PSM1/transformed_position', Point, queue_size=1, tcp_nodelay=True)
+        self.psm2_pos_transformed = rospy.Publisher('/autocamera/PSM2/transformed_position', Point, queue_size=1, tcp_nodelay=True)
         
+
     def set_method(self, n):
         """!
             Determines which autonomous camera method will be used
@@ -721,7 +727,24 @@ class Autocamera:
             psm2_pos,_ = self.psm2_kin.FK(clean_joints['psm2'].position)
             psm1_pose = self.psm1_kin.forward(clean_joints['psm1'].position)
             ecm_pose = self.ecm_kin.forward(clean_joints['ecm'].position)
-        
+
+
+            #Reenu added below lines for dvrk_safety(psm_safety)
+
+            psm1_pos_trans = Point()
+            psm1_pos_trans.x = psm1_pos[0]
+            psm1_pos_trans.y = psm1_pos[1]
+            psm1_pos_trans.z = psm1_pos[2]
+
+            psm2_pos_trans = Point()
+            psm2_pos_trans.x = psm2_pos[0]
+            psm2_pos_trans.y = psm2_pos[1]
+            psm2_pos_trans.z = psm2_pos[2]
+
+            self.psm1_pos_transformed.publish(psm1_pos_trans)
+            self.psm2_pos_transformed.publish(psm2_pos_trans)
+
+
         except Exception as e:
             rospy.logerr(e.message)
             output_msg = joint['ecm']
