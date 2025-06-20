@@ -54,7 +54,7 @@ def AskGPT (prompt):
 # above.   These choices should all have actions in the calling program.
 #####################################################################
     completions = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         temperature = 0.7,
         messages=[
             #realtime training data... we can limit this to 3-4 times and then simplify the command to just the last part. 
