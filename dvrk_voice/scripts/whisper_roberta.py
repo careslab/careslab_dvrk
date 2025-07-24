@@ -8,7 +8,8 @@ import sys
 import threading
 from playsound import playsound
 
-import openai
+from classification import Classification
+
 
 import rospy
 from std_msgs.msg import Empty
@@ -30,67 +31,31 @@ gotoEcm_pub = rospy.Publisher('/assistant/goto_ecm_position', Int16, queue_size=
 voiceCommand_pub = rospy.Publisher('/voice_command', String, queue_size=1)
 picture_pub = rospy.Publisher('/assistant/take_picture', Bool, queue_size=1)
 video_pub = rospy.Publisher('/assistant/take_video', Bool, queue_size=1)
+# new commands publishers
+draw_left_pub = rospy.Publisher('/assistant/draw_left', Bool, queue_size=1)
+draw_right_pub = rospy.Publisher('/assistant/draw_right', Bool, queue_size=1)
+clear_drawings_pub = rospy.Publisher('/assistant/clear_drawings', Bool, queue_size=1)
+stop_drawing_pub = rospy.Publisher('/assistant/stop_drawing', Bool, queue_size=1)
+blood_pressure_pub = rospy.Publisher('/assistant/blood_pressure', Bool, queue_size=1)
+heart_rate_pub = rospy.Publisher('/assistant/heart_rate', Bool, queue_size=1)
+pulse_oximeter_pub = rospy.Publisher('/assistant/pulse_oximeter', Bool, queue_size=1)
+respiratory_rate_pub = rospy.Publisher('/assistant/respiratory_rate', Bool, queue_size=1)
+body_temperature_pub = rospy.Publisher('/assistant/body_temperature', Bool, queue_size=1)
 
-
-#Chat GPT routines and limited choices. 
-
-#define choice for chatgpt
-choices = {'TR': 'davinci track right', 'TL': 'davinci track left', 'TM': 'davinci track middle', 
-           'ST': 'davinci start', 'SX': 'davinci stop', 'KL': 'davinci keep left', 'KR': 'davinci keep right', 'FT': 'davinci find tools', 
-           'TP': 'davinci take picture', 'SV': 'davinci start video', 'XV': 'davinci stop video', 'NV': 'Something not valid'}
+#library of choices
+command_library = {'TR': 'davinci track right', 'TL': 'davinci track left', 'TM': 'davinci track middle', 
+           'ST': 'davinci start', 'SX': 'davinci stop', 'ML': 'davinci keep left', 'MR': 'davinci keep right', 'FT': 'davinci find tools', 
+           'TP': 'davinci take picture', 'SV': 'davinci start video', 'XV': 'davinci stop video', 'NV': 'Something not valid', 
+#new commands
+           'DL': 'davinci draw left', 'DR': 'davinci draw right', 'CX': 'davinci clear my drawings', 'DX': 'davinci stop drawing', 
+           'BP': 'davinci blood pressure', 'HR': 'davinci heart rate', 'PO': 'davinci pulse oximeter', 
+           'RR': 'davinci respiratory rate', 'BT': 'davinci body temperature'}
 
 #we limit the output of chattpt to only these commands. 
-listofpossiblecommands = "TR TL TM ST SX KL KR FT TP SV XV NV"
-
-#get the key
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-def AskGPT (prompt):
-####################################################################
-# This function takes a command like 'plese track the left tool' and 
-# provides chatgpt some examples on how to answer the command.  Note
-# that the return value is only one of the choices in the choices array
-# above.   These choices should all have actions in the calling program.
-#####################################################################
-    completions = openai.ChatCompletion.create(
-        model="gpt-4o",
-        temperature = 0.7,
-        messages=[
-            #realtime training data... we can limit this to 3-4 times and then simplify the command to just the last part. 
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Given this phrase: 'Track the right tool' return the letters correspoing to the right answer: 'TR': 'track or follow the right tool', 'TL': 'track or follow the left' \
-                'TM': 'track or follow the middle of the tools', 'ST': 'start or start moving camera', 'SX': 'stop or stop everything', 'KL': 'keep the left tool in view', 'KR': 'keep the right tool in view', 'FT': 'davinci find my tools', 'TP': 'take picture',\
-                'SV': 'indication to start a video recording', 'XV': 'indications to stop the video recording', 'NV': 'something not valid or not understood"
-            },
-            {"role": "assistant", "content": "TR"},
-
-            {"role": "user", "content": "Start playing the video"},
-            {"role": "assistant", "content":  "SV"},
-
-            {"role": "user", "content": "'Please take a picture of the scene'"}, 
-            {"role": "assistant", "content":  "TP"},
-
-            {"role": "user", "content": "'something not on the list of options or not valid has been said'"} ,
-            {"role": "assistant", "content":  "NV"},
-
-            #This is the acutial question to the chatgpt.
-            {"role": "user", "content": prompt}    
-        ]
-    )
-        
-    #extract the index. The index is a two character string
-    index = completions['choices'][0]['message']['content']
-
-    #check to make sure that it is only 2 characters...otherwise, GPT may have returened a novel ;-)
-    if (index in listofpossiblecommands) and len(index) == 2:
-        print ("=====>")
-        print(index) 
-        return (choices [index])
-    else:
-        print("didn't understand")
-        return (choices["NV"]) # NV is an index 
-
-################################################################
+listofpossiblecommands = "TR TL TM ST SX ML MR FT TP SV XV NV DL DR CX DX BP HR PO RR BT"
+     
+# Initialize the Classification model
+clf=Classification()
 
 # # Load Whisper model
 whisper_model = whisper.load_model("base") # You can also use "tiny", "small", etc.
@@ -123,7 +88,13 @@ try:
             continue
 
         print("You said:", prompt)
-        cmd = AskGPT(prompt)
+        cmd = clf.handle_command(prompt)
+        #check to make sure the cmd is only two letters and convert it into an actual command
+        if (cmd in listofpossiblecommands) and len(cmd) == 2:
+            print (f"=====> {cmd}")
+            (command_library[cmd])
+        else:
+            print("Invalid command detected. Please try again.")
 
         # ROS command logic
         if cmd == "davinci start":
@@ -204,6 +175,60 @@ try:
         elif cmd == "Something not valid":
             print("Not valid")
             playsound('repeat.wav')
+#New commands logic
+        elif cmd == "davinci draw left":
+            print("Drawing left")
+            draw_left_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci draw left")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci draw right":
+            print("Drawing right")
+            draw_right_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci draw right")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci clear my drawings":
+            print("Clearing drawings")
+            clear_drawings_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci clear my drawings")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci stop drawing":    
+            print("Stopping drawing")
+            stop_drawing_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci stop drawing")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci blood pressure":
+            print("Taking blood pressure")
+            blood_pressure_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci take blood pressure")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci heart rate":
+            print("Taking heart rate")
+            heart_rate_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci take heart rate")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci pulse oximeter":   
+            print("Taking pulse oximeter")
+            pulse_oximeter_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci take pulse oximeter")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci respiratory rate":
+            print("Taking respiratory rate")
+            respiratory_rate_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci take respiratory rate")
+            playsound('sound95.wav')
+
+        elif cmd == "davinci body temperature":
+            print("Taking body temperature")
+            body_temperature_pub.publish(True)
+            voiceCommand_pub.publish("Da Vinci take body temperature")
+            playsound('sound95.wav')
 
 except KeyboardInterrupt:
     print("\nExiting...")
