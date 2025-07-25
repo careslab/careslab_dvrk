@@ -1,3 +1,3 @@
 #!/bin/bash
-source transformers-env/bin/activate
-gnome-terminal -- bash -c "python test_mic_vad.py"
+
+gnome-terminal -- bash -c "source transformers-env/bin/activate && python whisper_roberta.py -l && python whisper_roberta.py -d 10; exec bash"

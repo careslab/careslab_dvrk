@@ -84,14 +84,21 @@ try:
         result = whisper_model.transcribe(audio_path)
         prompt = result['text'].strip()
 
+        # TEST 1
+        print("Whisper transcription:", prompt)
+
         if not prompt:
             continue
 
         print("You said:", prompt)
         cmd = clf.handle_command(prompt)
+
+        # TEST 2
+        print("Command after classification:", cmd)
+
         #check to make sure the cmd is only two letters and convert it into an actual command
         if (cmd in listofpossiblecommands) and len(cmd) == 2:
-            print (f"=====> {cmd}")
+            #print (f"=====> {cmd}")
             (command_library[cmd])
         else:
             print("Invalid command detected. Please try again.")
@@ -105,6 +112,9 @@ try:
             voiceCommand_pub.publish("Da Vinci Start")
             playsound('sound95.wav')
 
+            # TEST 3
+            #print(f"[SUCCESS] Executed command: '{prompt}' -> '{cmd}'")
+
         elif cmd == "davinci stop":
             print("Stopping autocamera")
             run_pub.publish(False)
@@ -116,6 +126,9 @@ try:
             track_pub.publish("right")
             voiceCommand_pub.publish("Da Vinci track right")
             playsound('sound95.wav')
+
+            # TEST 4
+            #print(f"[SUCCESS] Executed command: '{prompt}' -> '{cmd}'")
 
         elif cmd == "davinci track left":
             print("Tracking left")
