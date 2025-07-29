@@ -8,7 +8,7 @@ class Classification:
 
     def sort(self, command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/sort/sort_distilroberta-base"
+        model_path = "./data/sort_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
@@ -28,7 +28,7 @@ class Classification:
 
     def tools(self,command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/tools/tools_distilroberta-base"
+        model_path = "./data/tools_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
@@ -48,7 +48,7 @@ class Classification:
 
     def start_stop(self, command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/start_stop/start_stop_distilroberta-base"
+        model_path = "./data/start_stop_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
@@ -68,7 +68,7 @@ class Classification:
 
     def camera(self,command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/camera/camera_distilroberta-base"
+        model_path = "./data/camera_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
@@ -88,7 +88,7 @@ class Classification:
 
     def draw(self,command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/draw/draw_distilroberta-base"
+        model_path = "./data/draw_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
@@ -108,7 +108,7 @@ class Classification:
 
     def patient(self,command):
         #load the model and tokenizer
-        model_path = "./data/w_cat/patient/patient_distilroberta-base"
+        model_path = "./data/patient_distilroberta-base"
         tokenizer = AutoTokenizer.from_pretrained(model_path)
         model = AutoModelForSequenceClassification.from_pretrained(model_path)
         #load the label encoder
